@@ -1,0 +1,219 @@
+O projeto de uma oficina mecânica foi concebido com a criação de um banco de dados relacional denominado "mecanica_database". O esquema do banco de dados foi desenvolvido para armazenar informações sobre mecânicos, clientes, veículos, serviços, preços, ordens de serviço e equipes.
+Na criação do banco de dados, foram definidas as seguintes tabelas:
+-- Criação do banco de dados
+CREATE DATABASE IF NOT EXISTS mecanica_database;
+
+-- Seleção do banco de dados
+USE mecanica_database;
+
+CREATE TABLE Mecanico (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    codigo VARCHAR(50) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    endereco VARCHAR(255) DEFAULT 'N/A',
+    especialidade VARCHAR(100) DEFAULT 'Geral'
+);
+
+CREATE TABLE aceite (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    sim VARCHAR(10) NOT NULL DEFAULT 'Sim',
+    nao VARCHAR(10) NOT NULL DEFAULT 'Não'
+);
+
+CREATE TABLE Cliente (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(14) NOT NULL
+);
+
+CREATE TABLE veiculo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    modelo VARCHAR(100) NOT NULL,
+    marca VARCHAR(100) NOT NULL,
+    ano INT NOT NULL,
+    idCliente INT,
+    FOREIGN KEY (idCliente) REFERENCES Cliente(id)
+);
+
+CREATE TABLE precos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    pecas INT DEFAULT 0,
+    servicos VARCHAR(100) DEFAULT 'N/A'
+);
+
+CREATE TABLE Equipe (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    idMecanico INT,
+    idAceite INT,
+    FOREIGN KEY (idMecanico) REFERENCES Mecanico(id),
+    FOREIGN KEY (idAceite) REFERENCES aceite(id)
+);
+
+CREATE TABLE tipo_servico (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    conserto VARCHAR(100) NOT NULL,
+    revisao VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE chamado (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    idVeiculo INT,
+    idEquipe INT,
+    idTipoServico INT,
+    FOREIGN KEY (idVeiculo) REFERENCES veiculo(id),
+    FOREIGN KEY (idEquipe) REFERENCES Equipe(id),
+    FOREIGN KEY (idTipoServico) REFERENCES tipo_servico(id)
+);
+
+CREATE TABLE OS (
+    idOS INT PRIMARY KEY AUTO_INCREMENT,
+    numero VARCHAR(50),
+    data_emissao DATE,
+    data_conclusao DATE,
+    valor INT DEFAULT 0,
+    status VARCHAR(50) DEFAULT 'Pendente',
+    idEquipe INT,
+    idPreco INT,
+    idAceite INT,
+    FOREIGN KEY (idEquipe) REFERENCES Equipe(id),
+    FOREIGN KEY (idPreco) REFERENCES precos(id),
+    FOREIGN KEY (idAceite) REFERENCES aceite(id)
+);
+Após a criação do esquema do banco de dados, os dados foram populados em cada tabela com informações fictícias para simular um ambiente operacional. Os dados incluem mecânicos, clientes, veículos, preços, tipos de serviço, ordens de serviço e equipes.
+-- Populando a tabela Mecanico
+INSERT INTO Mecanico (codigo, nome, endereco, especialidade) VALUES
+('MEC001', 'João Silva', 'Rua A, 123', 'Motor'),
+('MEC002', 'Maria Oliveira', 'Rua B, 456', 'Suspensão'),
+('MEC003', 'Pedro Santos', 'Rua C, 789', 'Freios'),
+('MEC004', 'Ana Souza', 'Rua D, 1011', 'Transmissão'),
+('MEC005', 'Carlos Pereira', 'Rua E, 1213', 'Elétrica'),
+('MEC006', 'Luiza Fernandes', 'Rua F, 1415', 'Ar Condicionado'),
+('MEC007', 'Ricardo Almeida', 'Rua G, 1617', 'Direção'),
+('MEC008', 'Patricia Lima', 'Rua H, 1819', 'Injeção Eletrônica'),
+('MEC009', 'Roberto Costa', 'Rua I, 2021', 'Suspensão'),
+('MEC010', 'Carla Silva', 'Rua J, 2223', 'Freios');
+-- Populando a tabela aceite
+INSERT INTO aceite (sim, nao) VALUES
+('Sim', 'Não');
+-- Populando a tabela Cliente
+INSERT INTO Cliente (nome, cpf) VALUES
+('José Costa', '123.456.789-00'),
+('Ana Oliveira', '987.654.321-00'),
+('Fernanda Lima', '111.222.333-44'),
+('Paulo Santos', '555.666.777-88'),
+('Maria Silva', '999.888.777-66'),
+('Ricardo Alves', '777.888.999-55'),
+('Juliana Fernandes', '444.555.666-33'),
+('Marcos Oliveira', '222.333.444-11'),
+('Luisa Souza', '888.999.000-22'),
+('Fernando Pereira', '666.777.888-99');
+-- Populando a tabela veiculo
+INSERT INTO veiculo (modelo, marca, ano, idCliente) VALUES
+('Gol', 'Volkswagen', 2010, 1),
+('Onix', 'Chevrolet', 2018, 2),
+('Corolla', 'Toyota', 2015, 3),
+('HB20', 'Hyundai', 2019, 4),
+('Uno', 'Fiat', 2012, 5),
+('Civic', 'Honda', 2017, 6),
+('Fox', 'Volkswagen', 2013, 7),
+('Fiesta', 'Ford', 2016, 8),
+('C3', 'Citroen', 2014, 9),
+('Sandero', 'Renault', 2020, 10);
+-- Populando a tabela precos
+INSERT INTO precos (pecas, servicos) VALUES
+(150, 'Troca de óleo'),
+(200, 'Troca de pastilhas de freio'),
+(300, 'Troca de correia dentada'),
+(100, 'Alinhamento'),
+(250, 'Troca de amortecedores'),
+(180, 'Troca de filtro de ar'),
+(220, 'Troca de velas'),
+(120, 'Limpeza de bicos injetores'),
+(350, 'Reparo de sistema de arrefecimento'),
+(280, 'Reparo de sistema elétrico');
+-- Populando a tabela tipo_servico
+INSERT INTO tipo_servico (conserto, revisao) VALUES
+('Reparo de motor', 'Revisão completa'),
+('Troca de pneus', 'Troca de óleo'),
+('Reparo de freios', 'Revisão de suspensão'),
+('Troca de amortecedores', 'Alinhamento e balanceamento'),
+('Reparo elétrico', 'Troca de peças'),
+('Troca de correia dentada', 'Troca de filtro de ar'),
+('Limpeza de bicos injetores', 'Reparo de sistema de arrefecimento'),
+('Reparo de sistema elétrico', 'Reparo de sistema de direção'),
+('Reparo de sistema de arrefecimento', 'Troca de pastilhas de freio'),
+('Alinhamento e balanceamento', 'Troca de amortecedores');
+-- Populando a tabela chamado
+INSERT INTO chamado (idVeiculo, idEquipe, idTipoServico) VALUES
+(6, 9, 3),
+(4, 4, 1),
+(2, 1, 7),
+(10, 8, 2),
+(7, 6, 5),
+(9, 10, 9),
+(5, 3, 10),
+(3, 2, 6),
+(8, 7, 8),
+(1, 5, 4);
+-- Populando a tabela Equipe
+INSERT INTO Equipe (idMecanico, idAceite) VALUES
+(1, 1),
+(2, 1),
+(3, 1),
+(4, 1),
+(5, 1),
+(6, 1),
+(7, 1),
+(8, 1),
+(9, 1),
+(10, 1);
+-- Populando a tabela OS
+INSERT INTO OS (numero, data_emissao, data_conclusao, valor, status, idEquipe, idPreco, idAceite) VALUES
+('OS001', '2024-04-01', '2024-04-05', 500.00, 'Concluído', 1, 1, 1),
+('OS002', '2024-04-02', '2024-04-06', 700.00, 'Em andamento', 2, 2, 1),
+('OS003', '2024-04-03', NULL, 300.00, 'Pendente', 3, 3, 1),
+('OS004', '2024-04-04', NULL, 400.00, 'Pendente', 4, 4, 1),
+('OS005', '2024-04-05', NULL, 600.00, 'Pendente', 5, 5, 1),
+('OS006', '2024-04-06', NULL, 450.00, 'Pendente', 6, 6, 1),
+('OS007', '2024-04-07', NULL, 550.00, 'Pendente', 7, 7, 1),
+('OS008', '2024-04-08', NULL, 350.00, 'Pendente', 8, 8, 1),
+('OS009', '2024-04-09', NULL, 250.00, 'Pendente', 9, 9, 1),
+('OS010', '2024-04-10', NULL, 150.00, 'Pendente', 10, 10, 1);
+Com os dados populados, foram elaboradas perguntas e consultas SQL para obter insights e análises sobre o funcionamento da oficina mecânica. As consultas incluem recuperações simples, filtros com cláusula WHERE, expressões para atributos derivados, ordenações com ORDER BY, condições de filtro aos grupos com HAVING e junções entre tabelas para fornecer uma perspectiva mais complexa dos dados.
+As consultas foram projetadas para responder a questões como:
+1. Quem é o mecânico com mais ordens de serviço concluídas?
+SELECT m.nome, COUNT(os.idOS) AS total_ordens
+FROM Mecanico m
+JOIN Equipe e ON m.id = e.idMecanico
+JOIN OS os ON e.id = os.idEquipe
+WHERE os.status = 'Concluído'
+GROUP BY m.nome
+ORDER BY total_ordens DESC
+LIMIT 1;
+2. Qual é o serviço com o preço médio mais alto?
+SELECT ts.conserto, AVG(p.pecas) AS preco_medio
+FROM tipo_servico ts
+JOIN precos p ON ts.conserto = p.servicos
+GROUP BY ts.conserto
+ORDER BY preco_medio DESC;
+3. Quantas ordens de serviço foram realizadas para cada especialidade de serviço e mecânico?
+SELECT m.especialidade, ts.conserto, COUNT(os.idOS) AS total_ordens
+FROM Mecanico m
+JOIN Equipe e ON m.id = e.idMecanico
+JOIN OS os ON e.id = os.idEquipe
+JOIN tipo_servico ts ON e.id = ts.id
+GROUP BY m.especialidade, ts.conserto;
+4. Qual cliente possui mais veículos registrados?
+SELECT c.nome, COUNT(v.id) AS total_veiculos
+FROM Cliente c
+LEFT JOIN veiculo v ON c.id = v.idCliente
+GROUP BY c.nome
+ORDER BY total_veiculos DESC;
+5. Qual é a média de tempo de conclusão para o serviço de reparo de motor?
+SELECT ts.conserto, AVG(DATEDIFF(os.data_conclusao, os.data_emissao)) AS media_tempo_conclusao
+FROM OS os
+JOIN Equipe e ON os.idEquipe = e.id
+JOIN Mecanico m ON e.idMecanico = m.id
+JOIN tipo_servico ts ON ts.conserto = 'Reparo de motor'
+WHERE os.status = 'Concluído'
+GROUP BY ts.conserto;
