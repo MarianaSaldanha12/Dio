@@ -1,0 +1,96 @@
+Número de empregados por departamento e localidade
+
+CREATE VIEW emp_per_dept_loc AS
+SELECT d.department_id, d.department_name, d.location_id, COUNT(e.employee_id) AS num_employees
+FROM departments d
+LEFT JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_id, d.department_name, d.location_id;
+
+Lista de departamentos e seus gerentes
+
+CREATE VIEW dept_managers AS
+SELECT d.department_id, d.department_name, e.employee_id AS manager_id, CONCAT(e.first_name, ' ', e.last_name) AS manager_name
+FROM departments d
+JOIN employees e ON d.manager_id = e.employee_id;
+
+Projetos com maior número de empregados (por ordenação desc)
+
+CREATE VIEW projects_most_employees AS
+SELECT project_id, project_name, COUNT(employee_id) AS num_employees
+FROM project_assignments
+GROUP BY project_id, project_name
+ORDER BY num_employees DESC;
+
+Lista de projetos, departamentos e gerentes
+
+CREATE VIEW projects_departments_managers AS
+SELECT p.project_id, p.project_name, d.department_name, CONCAT(e.first_name, ' ', e.last_name) AS manager_name
+FROM projects p
+JOIN departments d ON p.department_id = d.department_id
+JOIN employees e ON d.manager_id = e.employee_id;
+
+Quais empregados possuem dependentes e se são gerentes
+
+CREATE VIEW employees_with_dependents AS
+SELECT e.employee_id, CONCAT(e.first_name, ' ', e.last_name) AS employee_name, 
+       CASE WHEN e.manager_id IS NOT NULL THEN 'Yes' ELSE 'No' END AS is_manager,
+       CASE WHEN d.dependent_id IS NOT NULL THEN 'Yes' ELSE 'No' END AS has_dependents
+FROM employees e
+LEFT JOIN dependents d ON e.employee_id = d.employee_id;
+
+
+Definição de Permissões de Acesso
+
+Exemplo de Criação de Usuário e Permissões no MySQL
+
+-- Conectar ao MySQL como usuário root
+mysql -u root -p
+
+-- Criação de usuário 'gerente' com permissões limitadas
+CREATE USER 'gerente'@'localhost' IDENTIFIED BY 'senha_gerente';
+
+-- Concessão de permissão para acessar a view emp_per_dept_loc
+GRANT SELECT ON company.emp_per_dept_loc TO 'gerente'@'localhost';
+
+-- Concessão de permissão para acessar informações de employee e departamento
+GRANT SELECT ON company.employees TO 'gerente'@'localhost';
+GRANT SELECT ON company.departments TO 'gerente'@'localhost';
+
+-- Criação de usuário 'employee' com permissões limitadas
+CREATE USER 'employee'@'localhost' IDENTIFIED BY 'senha_employee';
+
+-- Concessão de permissão apenas para acessar informações de employee
+GRANT SELECT ON company.employees TO 'employee'@'localhost';
+
+=============================================================================================================================================================================================================
+1. Trigger para Remoção (before delete):
+
+USE ecommerce;
+
+CREATE TRIGGER BeforeDeleteUsuario
+BEFORE DELETE ON Usuarios
+FOR EACH ROW
+BEGIN
+    -- Altera o status do usuário para 'excluído' ao invés de remover fisicamente
+    UPDATE Usuarios
+    SET Status = 'excluído'
+    WHERE UsuarioID = OLD.UsuarioID;
+
+    -- Cancela a ação de exclusão física
+    DELETE FROM Usuarios WHERE UsuarioID = OLD.UsuarioID;
+END;
+
+2. Trigger para Atualização (before update):
+
+USE ecommerce;
+
+CREATE TRIGGER BeforeUpdateColaborador
+BEFORE UPDATE ON Colaboradores
+FOR EACH ROW
+BEGIN
+    -- Verifica se o salário base foi alterado e registra a mudança em um log de auditoria
+    IF NEW.SalarioBase <> OLD.SalarioBase THEN
+        INSERT INTO LogAlteracaoSalario (ColaboradorID, SalarioAnterior, SalarioNovo, DataAlteracao)
+        VALUES (OLD.ColaboradorID, OLD.SalarioBase, NEW.SalarioBase, NOW());
+    END IF;
+END;
