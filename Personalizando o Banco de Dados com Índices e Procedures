@@ -1,1 +1,99 @@
+1-Qual o departamento com maior número de pessoas?
 
+SELECT department_id, COUNT(*) AS num_people
+FROM employees
+GROUP BY department_id
+ORDER BY num_people DESC
+LIMIT 1;
+
+Índice Recomendado:
+CREATE INDEX idx_employees_department_id ON employees(department_id);
+Motivo da Escolha: Um índice no campo department_id permite uma rápida agregação e ordenação por esse campo, otimizando a consulta para encontrar o departamento com mais funcionários.
+
+2-Quais são os departamentos por cidade?
+
+SELECT city, department_name
+FROM departments
+JOIN employees ON departments.department_id = employees.department_id
+ORDER BY city, department_name;
+
+Índice Recomendado:
+
+CREATE INDEX idx_departments_department_id ON departments(department_id);
+CREATE INDEX idx_employees_department_id ON employees(department_id);
+Motivo da Escolha: Índices nos campos department_id em ambas as tabelas facilitam a junção entre departments e employees, melhorando a eficiência da consulta.
+
+3-Relação de empregados por departamento
+
+SELECT department_name, COUNT(*) AS num_employees
+FROM departments
+JOIN employees ON departments.department_id = employees.department_id
+GROUP BY department_name
+ORDER BY department_name;
+
+Índice Recomendado:
+
+CREATE INDEX idx_departments_department_id ON departments(department_id);
+CREATE INDEX idx_employees_department_id ON employees(department_id);
+Motivo da Escolha: Índices nos campos department_id em ambas as tabelas aceleram a junção e a agregação por departamento.
+
+==============================================================================================================================================================================================================
+1. Criar a Procedure:
+
+USE ecommerce; -- Seleciona o banco de dados ecommerce
+
+CREATE PROCEDURE GerenciarProdutos
+    @acao INT,              -- Variável de controle (1 = insert, 2 = update, 3 = delete)
+    @produto_id INT,        -- ID do produto (para update ou delete)
+    @nome NVARCHAR(100),    -- Nome do produto (para insert ou update)
+    @preco DECIMAL(10, 2),  -- Preço do produto (para insert ou update)
+    @quantidade INT         -- Quantidade do produto (para insert ou update)
+AS
+BEGIN
+    IF @acao = 1
+    BEGIN
+        -- Inserir novo produto
+        INSERT INTO Produtos (Nome, Preco, QuantidadeDisponivel)
+        VALUES (@nome, @preco, @quantidade);
+        PRINT 'Novo produto inserido com sucesso.';
+    END
+    ELSE IF @acao = 2
+    BEGIN
+        -- Atualizar produto existente
+        UPDATE Produtos
+        SET Nome = @nome, Preco = @preco, QuantidadeDisponivel = @quantidade
+        WHERE ProdutoID = @produto_id;
+
+        IF @@ROWCOUNT > 0
+            PRINT 'Produto atualizado com sucesso.';
+        ELSE
+            PRINT 'Nenhum produto foi atualizado.';
+    END
+    ELSE IF @acao = 3
+    BEGIN
+        -- Deletar produto existente
+        DELETE FROM Produtos WHERE ProdutoID = @produto_id;
+
+        IF @@ROWCOUNT > 0
+            PRINT 'Produto removido com sucesso.';
+        ELSE
+            PRINT 'Nenhum produto foi removido.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Ação inválida. Use 1 para inserir, 2 para atualizar, ou 3 para deletar.';
+    END
+END;
+
+2. Chamar a Procedure:
+
+USE ecommerce;
+
+-- Exemplo de chamada da procedure para inserir um novo produto
+EXEC GerenciarProdutos @acao = 1, @nome = 'Camiseta Preta', @preco = 29.99, @quantidade = 100;
+
+-- Exemplo de chamada da procedure para atualizar um produto existente
+EXEC GerenciarProdutos @acao = 2, @produto_id = 1, @nome = 'Camiseta Azul', @preco = 34.99, @quantidade = 80;
+
+-- Exemplo de chamada da procedure para deletar um produto existente
+EXEC GerenciarProdutos @acao = 3, @produto_id = 2;
