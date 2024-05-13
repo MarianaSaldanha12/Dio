@@ -1,0 +1,58 @@
+PARTE 1 – TRANSAÇÕES
+
+-- Desabilitar autocommit
+SET autocommit = 0;
+
+-- Iniciar transação
+START TRANSACTION;
+
+-- Instruções SQL (consultas e modificações de dados)
+UPDATE tabela SET coluna = valor WHERE condição;
+INSERT INTO tabela (coluna1, coluna2) VALUES (valor1, valor2);
+
+-- Finalizar transação (confirmar ou reverter)
+COMMIT; -- Confirma transação se tudo estiver correto
+ROLLBACK; -- Reverte transação em caso de erro
+PARTE 2 - TRANSAÇÃO COM PROCEDURE
+
+DELIMITER //
+
+CREATE PROCEDURE nome_procedure()
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK; -- Reverte a transação em caso de erro
+        RESIGNAL; -- Propaga o erro
+    END;
+
+    -- Iniciar transação
+    START TRANSACTION;
+
+    -- Instruções SQL dentro da transação
+    UPDATE tabela SET coluna = valor WHERE condição;
+    INSERT INTO tabela (coluna1, coluna2) VALUES (valor1, valor2);
+
+    -- Finalizar transação (confirmar ou reverter)
+    COMMIT; -- Confirma transação se tudo estiver correto
+END //
+
+DELIMITER ;
+PARTE 3 – BACKUP E RECOVERY
+
+Backup do Banco de Dados:
+
+mysqldump -u SEU_USUARIO -p SUA_SENHA NOME_DO_BANCO_DE_DADOS > backup.sql
+Isso criará um arquivo backup.sql com o dump do banco de dados especificado.
+
+Recovery do Banco de Dados:
+
+mysql -u SEU_USUARIO -p SUA_SENHA NOME_DO_BANCO_DE_DADOS < backup.sql
+Isso importará os dados do arquivo backup.sql para o banco de dados especificado.
+
+Adicionando ao GitHub:
+git init
+git add backup.sql seu_script.sql
+git commit -m "Adicionando arquivo de backup e script SQL"
+
+git remote add origin URL_DO_REPOSITORIO
+git push -u origin master
